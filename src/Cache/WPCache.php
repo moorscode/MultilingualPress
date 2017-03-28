@@ -25,11 +25,10 @@ class WPCache implements Cache {
 	 * @param string $key   The cache key (base).
 	 * @param string $group Optional. The cache group. Defaults to 'mlp'.
 	 */
-	public function __construct( $key, $group = 'mlp' ) {
+	public function __construct( string $key, string $group = self::DEFAULT_GROUP ) {
 
-		$this->key = (string) $key;
-
-		$this->group = (string) $group;
+		$this->key   = $key;
+		$this->group = $group;
 	}
 
 	/**
@@ -42,7 +41,7 @@ class WPCache implements Cache {
 	 *
 	 * @return bool
 	 */
-	public function add( $data, $key_fragments = array(), $expire = 0 ) {
+	public function add( $data, array $key_fragments = [], int $expire = 0 ): bool {
 
 		return wp_cache_add( $this->get_key( (array) $key_fragments ), $data, $this->group, (int) $expire );
 	}
@@ -54,7 +53,7 @@ class WPCache implements Cache {
 	 *
 	 * @return bool
 	 */
-	public function delete( $key_fragments = array() ) {
+	public function delete( array $key_fragments = [] ): bool {
 
 		return wp_cache_delete( $this->get_key( (array) $key_fragments ), $this->group );
 	}
@@ -66,7 +65,7 @@ class WPCache implements Cache {
 	 *
 	 * @return bool
 	 */
-	public function delete_for_key( $key ) {
+	public function delete_for_key( string $key ): bool {
 
 		return wp_cache_delete( (string) $key, $this->group );
 	}
@@ -76,7 +75,7 @@ class WPCache implements Cache {
 	 *
 	 * @return bool
 	 */
-	public function flush(){
+	public function flush(): bool {
 
 		return wp_cache_flush();
 	}
@@ -89,7 +88,7 @@ class WPCache implements Cache {
 	 *
 	 * @return mixed|bool
 	 */
-	public function get( $key_fragments = array(), $force = false ) {
+	public function get( array $key_fragments = [], bool $force = false ) {
 
 		return wp_cache_get( $this->get_key( (array) $key_fragments ), $this->group, (bool) $force );
 	}
@@ -101,57 +100,26 @@ class WPCache implements Cache {
 	 *
 	 * @return string
 	 */
-	public function get_key( array $key_fragments = array() ) {
+	public function get_key( array $key_fragments = [] ) {
 
 		if ( ! $key_fragments ) {
 			return $this->key;
 		}
 
-		// TODO: With MultilingualPress 3.0.0, turn stringify() into a closure.
-		$key_fragments = array_map( array( $this, 'stringify' ), $key_fragments );
+		$key_fragments = array_map( [ $this, 'stringify' ], $key_fragments );
 
 		return $this->key . '|' . implode( '|', $key_fragments );
 	}
 
 	/**
-	 * Returns the (hash) string representation for the passed data.
-	 *
-	 * @param mixed $data Data.
-	 *
-	 * @return string
-	 */
-	public function stringify( $data ) {
-
-		if ( null === $data ) {
-			return 'NULL';
-		}
-
-		if ( is_scalar( $data ) ) {
-			return (string) $data;
-		}
-
-		if ( is_array( $data ) || is_object( $data ) ) {
-			if ( $data instanceof \Closure ) {
-				$data = create_function( '$c', 'return $c();' );
-			}
-
-			return md5( serialize( $data ) );
-		}
-
-		return '';
-	}
-
-	/**
 	 * Registers the execution of the given callback for the given action hook(s).
-	 *
-	 * @todo With MultilingualPress 3.0.0, add callable type hint.
 	 *
 	 * @param callable        $callback The callback.
 	 * @param string|string[] $actions  One or more action hooks.
 	 *
 	 * @return void
 	 */
-	public function register_callback_for_action( $callback, $actions ) {
+	public function register_callback_for_action( callable $callback, $actions ) {
 
 		$actor = CacheActorFactory::create( $this, $callback );
 
@@ -169,7 +137,7 @@ class WPCache implements Cache {
 	 *
 	 * @return void
 	 */
-	public function register_deletion_action( $actions, $key_fragments = array() ) {
+	public function register_deletion_action( $actions, array $key_fragments = [] ) {
 
 		$deletor = CacheDeletorFactory::create( $this, $this->get_key( (array) $key_fragments ) );
 
@@ -188,7 +156,7 @@ class WPCache implements Cache {
 	 *
 	 * @return bool
 	 */
-	public function replace( $data, $key_fragments = array(), $expire = 0 ) {
+	public function replace( $data, array $key_fragments = [], int $expire = 0 ): bool {
 
 		return wp_cache_replace( $this->get_key( (array) $key_fragments ), $data, $this->group, (int) $expire );
 	}
@@ -202,7 +170,7 @@ class WPCache implements Cache {
 	 *
 	 * @return bool
 	 */
-	public function set( $data, $key_fragments = array(), $expire = 0 ) {
+	public function set( $data, array $key_fragments = [], int $expire = 0 ): bool {
 
 		return wp_cache_set( $this->get_key( (array) $key_fragments ), $data, $this->group, (int) $expire );
 	}
@@ -214,8 +182,36 @@ class WPCache implements Cache {
 	 *
 	 * @return void
 	 */
-	public function switch_to_site( $site_id ) {
+	public function switch_to_site( int $site_id ) {
 
-		wp_cache_switch_to_blog( (int) $site_id );
+		wp_cache_switch_to_blog( $site_id );
+	}
+
+	/**
+	 * Returns the (hash) string representation for the passed data.
+	 *
+	 * @param mixed $data Data.
+	 *
+	 * @return string
+	 */
+	private function stringify( $data ): string {
+
+		if ( null === $data ) {
+			return 'NULL';
+		}
+
+		if ( is_scalar( $data ) ) {
+			return (string) $data;
+		}
+
+		if ( $data instanceof \Closure ) {
+			return md5( 'Closure()' . spl_object_hash( $data ) );
+		}
+
+		if ( is_array( $data ) || is_object( $data ) ) {
+			return md5( serialize( $data ) );
+		}
+
+		return '';
 	}
 }

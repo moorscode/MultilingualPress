@@ -22,14 +22,13 @@ class CacheDeletor {
 	/**
 	 * Constructor. Sets up the properties.
 	 *
-	 * @param Cache $cache Cache object.
-	 * @param string    $key   The cache key.
+	 * @param Cache  $cache Cache object.
+	 * @param string $key   The cache key.
 	 */
-	public function __construct( Cache $cache, $key ) {
+	public function __construct( Cache $cache, string $key ) {
 
 		$this->cache = $cache;
-
-		$this->key = (string) $key;
+		$this->key   = $key;
 	}
 
 	/**
@@ -37,7 +36,7 @@ class CacheDeletor {
 	 *
 	 * @return bool
 	 */
-	public function delete() {
+	public function delete(): bool {
 
 		return $this->cache->delete_for_key( $this->key );
 	}

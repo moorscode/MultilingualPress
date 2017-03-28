@@ -7,13 +7,7 @@ namespace Inpsyde\MultilingualPress\Cache;
  */
 interface Cache {
 
-	/**
-	 * Constructor. Sets up the properties.
-	 *
-	 * @param string $key   The cache key (base).
-	 * @param string $group Optional. The cache group. Defaults to 'mlp'.
-	 */
-	public function __construct( $key, $group = 'mlp' );
+	const DEFAULT_GROUP = 'mlp';
 
 	/**
 	 * Adds the given data to the cache unless it is set already, using the key generated from the key base and the
@@ -25,7 +19,7 @@ interface Cache {
 	 *
 	 * @return bool
 	 */
-	public function add( $data, $key_fragments = array(), $expire = 0 );
+	public function add( $data, array $key_fragments = [], int $expire = 0 ): bool;
 
 	/**
 	 * Removes the data from the cache, using the key generated from the key base and the given key fragment(s).
@@ -34,7 +28,7 @@ interface Cache {
 	 *
 	 * @return bool
 	 */
-	public function delete( $key_fragments = array() );
+	public function delete( array $key_fragments = [] ): bool;
 
 	/**
 	 * Removes the data from the cache, using the given key.
@@ -43,14 +37,14 @@ interface Cache {
 	 *
 	 * @return bool
 	 */
-	public function delete_for_key( $key );
+	public function delete_for_key( string $key ): bool;
 
 	/**
 	 * Removes all data from the cache.
 	 *
 	 * @return bool
 	 */
-	public function flush();
+	public function flush(): bool;
 
 	/**
 	 * Returns the data from the cache, using the key generated from the key base and the given key fragment(s).
@@ -60,19 +54,17 @@ interface Cache {
 	 *
 	 * @return mixed|bool
 	 */
-	public function get( $key_fragments = array(), $force = false );
+	public function get( array $key_fragments = [], bool $force = false );
 
 	/**
 	 * Registers the execution of the given callback for the given action hook(s).
-	 *
-	 * @todo With MultilingualPress 3.0.0, add callable type hint.
 	 *
 	 * @param callable        $callback The callback.
 	 * @param string|string[] $actions  One or more action hooks.
 	 *
 	 * @return void
 	 */
-	public function register_callback_for_action( $callback, $actions );
+	public function register_callback_for_action( callable $callback, $actions );
 
 	/**
 	 * Registers the deletion of the cached data for the given action hook(s), using the key generated from the key base
@@ -83,7 +75,7 @@ interface Cache {
 	 *
 	 * @return void
 	 */
-	public function register_deletion_action( $actions, $key_fragments = array() );
+	public function register_deletion_action( $actions, array $key_fragments = [] );
 
 	/**
 	 * Replaces the original data in the cache with the given data, using the key generated from the key base and the
@@ -95,7 +87,7 @@ interface Cache {
 	 *
 	 * @return bool
 	 */
-	public function replace( $data, $key_fragments = array(), $expire = 0 );
+	public function replace( $data, array $key_fragments = [], int $expire = 0 ): bool;
 
 	/**
 	 * Saves the given data to the cache, using the key generated from the key base and the given key fragment(s).
@@ -106,7 +98,7 @@ interface Cache {
 	 *
 	 * @return bool
 	 */
-	public function set( $data, $key_fragments = array(), $expire = 0 );
+	public function set( $data, array $key_fragments = [], int $expire = 0 ): bool;
 
 	/**
 	 * Switches to the specific cache for the site with the given ID.
@@ -115,5 +107,5 @@ interface Cache {
 	 *
 	 * @return void
 	 */
-	public function switch_to_site( $site_id );
+	public function switch_to_site( int $site_id );
 }

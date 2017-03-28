@@ -22,12 +22,10 @@ class CacheActor {
 	/**
 	 * Constructor. Sets up the properties.
 	 *
-	 * @todo With MultilingualPress 3.0.0, add callable type hint.
-	 *
 	 * @param Cache    $cache    Cache object.
 	 * @param callable $callback The callback.
 	 */
-	public function __construct( Cache $cache, $callback ) {
+	public function __construct( Cache $cache, callable $callback ) {
 
 		$this->cache = $cache;
 
@@ -38,10 +36,14 @@ class CacheActor {
 	 * Executes the injected callback, and passes the injected cache object as well as the original arguments passed to
 	 * this method as arguments to the callback.
 	 *
+	 * @param array $args
+	 *
 	 * @return mixed
 	 */
-	public function act() {
+	public function act( ...$args ) {
 
-		return call_user_func( array( $this, 'callback' ), $this->cache, func_get_args() );
+		array_unshift( $args, $this->cache );
+
+		return ( $this->callback )( ...$args );
 	}
 }
