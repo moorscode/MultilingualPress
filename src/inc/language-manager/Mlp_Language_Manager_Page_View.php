@@ -30,26 +30,26 @@ class Mlp_Language_Manager_Page_View {
 	private $setting;
 
 	/**
-	 * @var Mlp_Updatable
+	 * @var Mlp_Language_Manager_Controller
 	 */
-	private $watcher;
+	private $controller;
 
 	/**
-	 * @param Setting       $setting
-	 * @param Mlp_Updatable $watcher
-	 * @param Mlp_Browsable $pagination_data
-	 * @param Nonce         $nonce           Nonce object.
+	 * @param Setting                         $setting
+	 * @param Mlp_Language_Manager_Controller $controller
+	 * @param Mlp_Browsable                   $pagination_data
+	 * @param Nonce                           $nonce Nonce object.
 	 */
 	public function __construct(
 		Setting $setting,
-		Mlp_Updatable $watcher,
+		Mlp_Language_Manager_Controller $controller,
 		Mlp_Browsable $pagination_data,
 		Nonce $nonce
 	) {
 
 		$this->setting = $setting;
 
-		$this->watcher = $watcher;
+		$this->controller = $controller;
 
 		$this->pagination_data = $pagination_data;
 
@@ -62,18 +62,27 @@ class Mlp_Language_Manager_Page_View {
 	 */
 	public function render() {
 
+		// TODO: Remove this by refactoring things into ~\LanguageManager\LanguageManagerSettingsPageView.
 		$current_page = $this->pagination_data->get_current_page();
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( $this->setting->title() ); ?></h1>
-			<?php $this->watcher->update( 'before_form' ); ?>
+
+			<?php $this->controller->before_form(); ?>
+
 			<form action="<?php echo esc_url( $this->setting->url() ); ?>" method="post">
+				<?php // TODO: Remove action input as the action is already part of the (new) URL. ?>
 				<input type="hidden" name="action" value="<?php echo esc_attr( $this->setting->action() ); ?>">
 				<input type="hidden" name="paged" value="<?php echo esc_attr( $current_page ); ?>">
-				<?php echo nonce_field( $this->nonce ); ?>
-				<?php $this->watcher->update( 'before_table' ); ?>
-				<?php $this->watcher->update( 'show_table' ); ?>
-				<?php $this->watcher->update( 'after_table' ); ?>
+
+				<?php
+				// TODO: Remove as the nonce is already handled in the new view class.
+				echo nonce_field( $this->nonce );
+				?>
+
+				<?php $this->controller->before_table(); ?>
+				<?php $this->controller->show_table(); ?>
+				<?php $this->controller->after_table(); ?>
 				<?php submit_button(
 					esc_attr__( 'Save changes', 'multilingualpress' ),
 					'primary',
@@ -81,9 +90,9 @@ class Mlp_Language_Manager_Page_View {
 					false,
 					[ 'style' => 'float:left' ]
 				); ?>
-				<?php $this->watcher->update( 'after_form_submit_button' ); ?>
 			</form>
-			<?php $this->watcher->update( 'after_form' ); ?>
+
+			<?php $this->controller->after_form(); ?>
 		</div>
 		<?php
 	}

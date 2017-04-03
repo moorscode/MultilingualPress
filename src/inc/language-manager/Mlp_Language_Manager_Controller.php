@@ -20,7 +20,7 @@ use function Inpsyde\MultilingualPress\resolve;
  * @author  Inpsyde GmbH, toscho
  * @license GPL
  */
-class Mlp_Language_Manager_Controller implements Mlp_Updatable {
+class Mlp_Language_Manager_Controller {
 
 	/**
 	 * @var Languages
@@ -70,25 +70,28 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 	/**
 	 * Constructor.
 	 *
-	 * @param Mlp_Data_Access                 $database
-	 * @param wpdb                            $wpdb
+	 * @param Mlp_Data_Access $database
+	 * @param wpdb            $wpdb
 	 */
-	public function __construct(
-		Mlp_Data_Access                 $database,
-		wpdb                            $wpdb
-		) {
+	public function __construct( Mlp_Data_Access $database, wpdb $wpdb ) {
 
-		$this->wpdb            = $wpdb;
-		$this->page_title      = __( 'Language Manager', 'multilingualpress' );
+		$this->wpdb = $wpdb;
+
+		$this->page_title = __( 'Language Manager', 'multilingualpress' );
+
 		$this->pagination_data = new Mlp_Language_Manager_Pagination_Data( $database );
-		$this->setting         = new Mlp_Language_Manager_Options_Page_Data(
+
+		// TODO: Remove as the data are (to be) defined in other places (e.g., updater, repository, settings page view).
+		$this->setting = new Mlp_Language_Manager_Options_Page_Data(
 			$this->page_title,
 			resolve( 'multilingualpress.type_factory', TypeFactory::class )
 		);
 
+		// TODO: Remove as the nonce is defined in the service provider and is to be injected to where it is to be used.
 		$this->nonce = new WPNonce( $this->setting->action() );
 
-		$this->view            = new Mlp_Language_Manager_Page_View(
+		// TODO: Remove, or better: refactor into the new ~\LanguageManager\LanguageManagerSettingsPageView class.
+		$this->view = new Mlp_Language_Manager_Page_View(
 			$this->setting,
 			$this,
 			$this->pagination_data,
@@ -97,25 +100,19 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 
 		$this->languages = resolve( 'multilingualpress.languages', Languages::class );
 
-		$updater               = new Mlp_Language_Updater(
+		$updater = new Mlp_Language_Updater(
 			$this->pagination_data,
 			new Mlp_Array_Diff( $this->get_columns() ),
 			$this->languages,
 			$this->nonce
 		);
 
-		add_action(
-			'admin_post_mlp_update_languages',
-			[ $updater, 'update_languages' ]
-		);
-		add_action(
-			'network_admin_menu',
-			[ $this, 'register_page' ], 50
-		);
-		add_action(
-			"admin_post_{$this->reset_action}",
-			[ $this, 'reset_table' ]
-		);
+		add_action( 'admin_post_mlp_update_languages', [ $updater, 'update_languages' ] );
+
+		// TODO: Remove as setting up the (new) settings page has been taken care of in the service provider already.
+		add_action( 'network_admin_menu', [ $this, 'register_page' ], 50 );
+
+		add_action( "admin_post_{$this->reset_action}", [ $this, 'reset_table' ] );
 	}
 
 	/**
@@ -123,7 +120,8 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 	 */
 	public function register_page() {
 
-		$page_id = add_submenu_page(
+		// TODO: Remove as setting up the (new) settings page has been taken care of in the service provider already.
+		add_submenu_page(
 			'settings.php',
 			$this->page_title,
 			$this->page_title,
@@ -131,58 +129,6 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 			'language-manager',
 			[ $this->view, 'render' ]
 		);
-
-		add_action( "load-{$page_id}", [ $this, 'enqueue_style' ] );
-	}
-
-	/**
-	 * Enqueue style.
-	 *
-	 * @wp-hook load-{$page}
-	 *
-	 * @return void
-	 */
-	public function enqueue_style() {
-
-		// TODO: Check why this is not needed. The CSS must've been enqueued somewhere before already...
-		//$assets = $this->plugin_data->get( 'assets' );
-		//$assets->provide( 'mlp_admin_css' );
-	}
-
-	/**
-	 * @param string $name
-	 *
-	 * @return mixed|void Either a value, or void for actions.
-	 */
-	public function update( $name ) {
-
-		if ( 'before_form' === $name ) {
-			$this->before_form();
-
-			return;
-		}
-
-		if ( 'before_table' === $name ) {
-			$this->before_table();
-
-			return;
-		}
-
-		if ( 'show_table' === $name ) {
-			$this->show_table();
-
-			return;
-		}
-
-		if ( 'after_table' === $name ) {
-			$this->after_table();
-
-			return;
-		}
-
-		if ( 'after_form' === $name ) {
-			$this->after_form();
-		}
 	}
 
 	/**
@@ -235,7 +181,7 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 	/**
 	 * @return void
 	 */
-	private function before_form() {
+	public function before_form() {
 
 		if ( ! empty( $_GET['msg'] ) ) {
 			echo $this->get_update_message();
@@ -281,7 +227,7 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 	/**
 	 * @return void
 	 */
-	private function after_form() {
+	public function after_form() {
 
 		?>
 		<p class="description" style="padding-top:20px;clear:both">
@@ -312,7 +258,7 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 	/**
 	 * @return void
 	 */
-	private function before_table() {
+	public function before_table() {
 
 		?>
 		<div class="tablenav top">
@@ -324,7 +270,7 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 	/**
 	 * @return void
 	 */
-	private function after_table() {
+	public function after_table() {
 
 		?>
 		<div class="tablenav bottom">
@@ -347,7 +293,7 @@ class Mlp_Language_Manager_Controller implements Mlp_Updatable {
 	/**
 	 * @return void
 	 */
-	private function show_table() {
+	public function show_table() {
 
 		$view = new Mlp_Admin_Table_View (
 			$this->languages,
