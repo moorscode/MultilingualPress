@@ -6,6 +6,7 @@ use Inpsyde\MultilingualPress\Database\Table;
 use Inpsyde\MultilingualPress\Database\Table\LanguagesTable;
 use Inpsyde\MultilingualPress\Database\WPDBTableInstaller;
 use Inpsyde\MultilingualPress\Factory\TypeFactory;
+use Inpsyde\MultilingualPress\LanguageManager\LanguageListTable;
 
 use function Inpsyde\MultilingualPress\call_exit;
 use function Inpsyde\MultilingualPress\check_admin_referer;
@@ -295,6 +296,10 @@ class Mlp_Language_Manager_Controller {
 	 */
 	public function show_table() {
 
+		$table = new LanguageListTable( $this->languages );
+		$table->prepare_items();
+		$table->display();
+		/*
 		$view = new Mlp_Admin_Table_View (
 			$this->languages,
 			$this->pagination_data,
@@ -303,6 +308,7 @@ class Mlp_Language_Manager_Controller {
 			'languages'
 		);
 		$view->show_table();
+		*/
 	}
 
 	/**
