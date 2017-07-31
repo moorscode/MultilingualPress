@@ -1,5 +1,5 @@
 <!--
-Thanks for contributing&mdash;you rock!
+Thanks for contributing - you rock!
 
 Please note:
 - These comments won't show up when you submit the issue.
@@ -12,6 +12,7 @@ Please note:
 
 * PHP: 
 * WordPress: 
+* MultilingualPress: 
 
 #### Steps to Reproduce
 
